@@ -120,6 +120,38 @@ class FinconTrainer:
             cvar_alpha=self.config.cvar_alpha
         )
 
+    def _slice_data_for_episodes(
+        self,
+        price_data: dict[str, pd.DataFrame],
+        num_days: int
+    ) -> dict[str, pd.DataFrame]:
+        """
+        Slice price data to use only num_days trading days.
+
+        All episodes will use the same time period to learn and improve.
+
+        Args:
+            price_data: Full price data dictionary
+            num_days: Number of trading days to use
+
+        Returns:
+            Sliced price data dictionary
+        """
+        sliced_data = {}
+
+        for symbol, df in price_data.items():
+            if len(df) >= num_days + 20:  # Need extra days for window_size
+                # Use the first num_days + 20 days (20 for window, num_days for trading)
+                sliced_data[symbol] = df.iloc[:num_days + 20].copy()
+            elif len(df) >= num_days:
+                # Use all available data if we have at least num_days
+                sliced_data[symbol] = df.copy()
+            else:
+                print(f"Warning: {symbol} has only {len(df)} days, less than required {num_days}")
+                sliced_data[symbol] = df.copy()
+
+        return sliced_data
+
     def train(self) -> list[dict[str, Any]]:
         """
         Run multi-episode training.
@@ -133,6 +165,7 @@ class FinconTrainer:
         print(f"Symbols: {self.config.symbols}")
         print(f"Period: {self.config.start_date} to {self.config.end_date}")
         print(f"Episodes: {self.config.episodes}")
+        print(f"Episode Duration: {self.config.episode_days} trading days")
         print(f"{'='*60}\n")
 
         # Fetch market data once
@@ -145,13 +178,20 @@ class FinconTrainer:
         if not price_data:
             raise ValueError("No market data available for specified symbols and dates")
 
+        # Slice data to only use episode_days trading days
+        # All episodes will use the same 5-day period to learn and improve
+        episode_price_data = self._slice_data_for_episodes(price_data, self.config.episode_days)
+
+        if not episode_price_data:
+            raise ValueError(f"Not enough data for {self.config.episode_days} trading days")
+
         # Run episodes
         for episode_id in range(self.config.episodes):
             print(f"\n{'='*60}")
             print(f"EPISODE {episode_id + 1}/{self.config.episodes}")
             print(f"{'='*60}\n")
 
-            episode_result = self._run_episode(episode_id, price_data)
+            episode_result = self._run_episode(episode_id, episode_price_data)
             self.episode_results.append(episode_result)
 
             # Cross-episode reinforcement
