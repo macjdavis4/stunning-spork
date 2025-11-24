@@ -72,12 +72,15 @@ python -m fincon create-config --output config.json
 
 Edit `config.json` and set the following:
 
+**Note on Episodes**: The system runs multiple episodes over the same time period to enable cross-episode learning. Each episode consists of `episode_days` trading days (default: 5 days), and the system runs `episodes` iterations (default: 4) over this same period. The agents learn and improve their decision-making across episodes through conceptual verbal reinforcement.
+
 ```json
 {
   "symbols": ["AAPL"],
   "start_date": "2023-01-01",
   "end_date": "2023-12-31",
-  "episodes": 3,
+  "episodes": 4,
+  "episode_days": 5,
   "initial_capital": 100000.0,
   "cvar_alpha": 0.05,
   "edgar": {
@@ -138,7 +141,8 @@ config = FinconConfig(
     symbols=["AAPL"],
     start_date="2023-01-01",
     end_date="2023-06-30",
-    episodes=3
+    episodes=4,
+    episode_days=5
 )
 
 # Create and run trainer
@@ -158,7 +162,8 @@ config = FinconConfig(
     symbols=["AAPL", "MSFT", "GOOGL"],
     start_date="2023-01-01",
     end_date="2023-06-30",
-    episodes=3,
+    episodes=4,
+    episode_days=5,
     enable_stock_selection_analyst=True
 )
 

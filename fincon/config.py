@@ -68,7 +68,8 @@ class FinconConfig(BaseModel):
     end_date: str = "2023-12-31"
 
     # Episode and learning configuration
-    episodes: int = 3
+    episodes: int = 4
+    episode_days: int = 5  # Number of trading days per episode
     initial_capital: float = 100000.0
 
     # Risk management
