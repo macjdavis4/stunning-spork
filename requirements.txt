@@ -8,6 +8,7 @@ pydantic>=2.0.0
 
 # Market data
 yfinance>=0.2.28
+finlight-client
 
 # Optimization
 scipy>=1.11.0

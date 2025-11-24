@@ -112,6 +112,7 @@ class OpenAILLMBackend:
         }
 
         try:
+            print(f"Calling LLM API with model {self.model}...")
             response = self.session.post(url, json=payload, timeout=60)
             response.raise_for_status()
             data = response.json()
@@ -119,9 +120,11 @@ class OpenAILLMBackend:
             if "choices" not in data or len(data["choices"]) == 0:
                 raise ValueError("No choices in API response")
 
+            print(f"LLM API call successful")
             return data["choices"][0]["message"]["content"]
 
         except requests.RequestException as e:
+            print(f"LLM API call failed: {e}")
             raise requests.RequestException(f"LLM API request failed: {e}")
 
 

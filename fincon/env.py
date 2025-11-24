@@ -92,6 +92,17 @@ class MarketEnvironment:
 
         self.dates = sorted(list(common_dates))
 
+        # Validate sufficient data for window size
+        min_required_dates = self.window_size + 1
+        if len(self.dates) < min_required_dates:
+            raise ValueError(
+                f"Insufficient data: {len(self.dates)} trading days available, "
+                f"but need at least {min_required_dates} days for window_size={self.window_size}. "
+                f"Please either:\n"
+                f"  1. Increase your date range to include more trading days\n"
+                f"  2. Reduce window_size to {len(self.dates) - 1} or less"
+            )
+
         # Reindex all dataframes
         for symbol in self.symbols:
             self.price_data[symbol] = self.price_data[symbol].loc[self.dates]

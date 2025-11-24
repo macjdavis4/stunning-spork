@@ -320,8 +320,10 @@ class FinconTrainer:
         # News analyst
         if self.news_analyst:
             try:
+                print(f"Running NewsAnalyst for {primary_symbol}...")
                 news_output = self.news_analyst.analyze(primary_symbol)
                 outputs["NewsAnalyst"] = news_output
+                print(f"NewsAnalyst complete")
             except Exception as e:
                 print(f"News analyst error: {e}")
                 outputs["NewsAnalyst"] = {
@@ -335,8 +337,10 @@ class FinconTrainer:
         # Fundamentals analyst
         if self.fundamentals_analyst:
             try:
+                print(f"Running FundamentalsAnalyst for {primary_symbol}...")
                 fund_output = self.fundamentals_analyst.analyze(primary_symbol)
                 outputs["FundamentalsAnalyst"] = fund_output
+                print(f"FundamentalsAnalyst complete")
             except Exception as e:
                 print(f"Fundamentals analyst error: {e}")
                 outputs["FundamentalsAnalyst"] = {
@@ -348,8 +352,10 @@ class FinconTrainer:
         # Data analyst
         if self.data_analyst:
             try:
+                print(f"Running DataAnalyst for {primary_symbol}...")
                 data_output = self.data_analyst.analyze(primary_symbol, observation)
                 outputs["DataAnalyst"] = data_output
+                print(f"DataAnalyst complete")
             except Exception as e:
                 print(f"Data analyst error: {e}")
                 outputs["DataAnalyst"] = {

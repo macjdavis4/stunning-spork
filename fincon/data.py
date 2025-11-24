@@ -16,6 +16,8 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import requests
+from finlight_client import FinlightApi, ApiConfig
+from finlight_client.models import GetArticlesParams
 
 
 # Ticker to CIK mapping for common symbols
@@ -327,11 +329,12 @@ class FinlightNewsClient:
         """
         self.api_key = api_key
         self.base_url = base_url
-        self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        })
+
+        # Initialize the official Finlight client
+        if api_key:
+            self.client = FinlightApi(config=ApiConfig(api_key=api_key))
+        else:
+            self.client = None
 
     def fetch_news(
         self,
@@ -358,54 +361,48 @@ class FinlightNewsClient:
             - url: Article URL
             - sentiment: Sentiment score if available, else None
         """
-        if not self.api_key:
+        if not self.client:
             print("Warning: No Finlight API key provided, returning empty news list")
             return []
 
-        # Construct endpoint (this is a mock endpoint structure)
-        # Adjust based on actual Finlight API documentation
-        url = f"{self.base_url}/news"
-
-        params = {
-            "symbol": symbol,
-            "limit": limit
-        }
-
-        if from_date:
-            params["from"] = from_date
-        if to_date:
-            params["to"] = to_date
-
         try:
-            response = self.session.get(url, params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
+            # Use the official Finlight client to fetch articles
+            # The API uses 'query' parameter for searching by symbol/company name
+            print(f"Fetching news for {symbol} from Finlight API...")
+            params = GetArticlesParams(query=symbol, language="en")
+            response = self.client.articles.fetch_articles(params=params)
+            print(f"Received response from Finlight API")
 
-            # Normalize response
+            # Normalize response to match expected format
             articles = []
 
-            if isinstance(data, dict) and "articles" in data:
-                raw_articles = data["articles"]
-            elif isinstance(data, list):
-                raw_articles = data
+            # The response should contain articles
+            if hasattr(response, 'articles'):
+                raw_articles = response.articles
+            elif isinstance(response, list):
+                raw_articles = response
             else:
+                print(f"Warning: Unexpected response format from Finlight API: {type(response)}")
                 raw_articles = []
 
-            for article in raw_articles:
+            for article in raw_articles[:limit]:
+                # Extract fields from the article object
                 normalized = {
-                    "title": article.get("title", ""),
-                    "summary": article.get("summary") or article.get("description", ""),
-                    "published_at": article.get("published_at") or article.get("publishedAt", ""),
-                    "source": article.get("source", {}).get("name", "Unknown") if isinstance(article.get("source"), dict) else str(article.get("source", "Unknown")),
-                    "url": article.get("url", ""),
-                    "sentiment": article.get("sentiment")
+                    "title": getattr(article, "title", ""),
+                    "summary": getattr(article, "summary", "") or getattr(article, "description", ""),
+                    "published_at": getattr(article, "published_at", "") or getattr(article, "publishedAt", ""),
+                    "source": getattr(article, "source", "Unknown"),
+                    "url": getattr(article, "url", ""),
+                    "sentiment": getattr(article, "sentiment", None)
                 }
                 articles.append(normalized)
 
-            return articles[:limit]
+            print(f"Successfully fetched {len(articles)} articles for {symbol}")
+            return articles
 
-        except requests.RequestException as e:
+        except Exception as e:
             print(f"Warning: Failed to fetch news for {symbol}: {e}")
+            print(f"Error type: {type(e).__name__}")
             # Return mock data for testing when API is unavailable
             return self._get_mock_news(symbol, limit)
 
