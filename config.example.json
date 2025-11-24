@@ -1,0 +1,38 @@
+{
+  "symbols": ["AAPL"],
+  "start_date": "2023-01-01",
+  "end_date": "2023-12-31",
+  "episodes": 3,
+  "initial_capital": 100000.0,
+  "cvar_alpha": 0.05,
+  "discount_factor": 1.0,
+  "market_data": {
+    "provider": "yfinance"
+  },
+  "edgar": {
+    "user_agent": "YourName your.email@example.com",
+    "base_url": "https://data.sec.gov"
+  },
+  "finlight": {
+    "api_key": "",
+    "base_url": "https://api.finlight.me/v1"
+  },
+  "llm": {
+    "model": "gpt-4",
+    "api_key": "",
+    "base_url": "https://api.openai.com/v1",
+    "temperature": 0.3,
+    "max_tokens": 2048
+  },
+  "portfolio": {
+    "max_position_size": 0.3,
+    "min_position_size": 0.05,
+    "risk_free_rate": 0.02
+  },
+  "enable_news_analyst": true,
+  "enable_fundamentals_analyst": true,
+  "enable_data_analyst": true,
+  "enable_ecc_analyst": false,
+  "enable_stock_selection_analyst": false,
+  "verbose": false
+}
